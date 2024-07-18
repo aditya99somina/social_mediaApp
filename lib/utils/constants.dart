@@ -17,7 +17,6 @@ class Constants {
   static Color darkBG = Color(0xff2B2B2B);
 
   static ThemeData lightTheme = ThemeData(
-    backgroundColor: lightBG,
     primaryColor: lightPrimary,
     textSelectionTheme: TextSelectionThemeData(
       cursorColor: lightAccent,
@@ -42,20 +41,15 @@ class Constants {
         fontWeight: FontWeight.w700,
       ),
     ),
-    colorScheme: ColorScheme.fromSwatch().copyWith(
-      secondary: lightAccent,
-    ),
+    colorScheme: ColorScheme.fromSwatch()
+        .copyWith(
+          secondary: lightAccent,
+        )
+        .copyWith(surface: lightBG),
   );
 
   static ThemeData darkTheme = ThemeData(
     iconTheme: const IconThemeData(color: Colors.white),
-    colorScheme: ColorScheme.fromSwatch(
-      accentColor: darkAccent,
-    ).copyWith(
-      secondary: darkAccent,
-      brightness: Brightness.dark,
-    ),
-    backgroundColor: darkBG,
     primaryColor: darkPrimary,
     scaffoldBackgroundColor: darkBG,
     textSelectionTheme: TextSelectionThemeData(
@@ -80,6 +74,14 @@ class Constants {
         fontWeight: FontWeight.w700,
       ),
     ),
+    colorScheme: ColorScheme.fromSwatch(
+      accentColor: darkAccent,
+    )
+        .copyWith(
+          secondary: darkAccent,
+          brightness: Brightness.dark,
+        )
+        .copyWith(surface: darkBG),
   );
 
   static List<T> map<T>(List list, Function handler) {

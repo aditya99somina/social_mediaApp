@@ -87,8 +87,10 @@ class _CommentsState extends State<Comments> {
                             controller: commentsTEC,
                             style: TextStyle(
                               fontSize: 15.0,
-                              color:
-                                  Theme.of(context).textTheme.headline6!.color,
+                              color: Theme.of(context)
+                                  .textTheme
+                                  .headlineSmall!
+                                  .color,
                             ),
                             decoration: InputDecoration(
                               contentPadding: EdgeInsets.all(10.0),
@@ -125,7 +127,7 @@ class _CommentsState extends State<Comments> {
                                 fontSize: 15.0,
                                 color: Theme.of(context)
                                     .textTheme
-                                    .headline6!
+                                    .headlineSmall!
                                     .color,
                               ),
                             ),
@@ -278,7 +280,8 @@ class _CommentsState extends State<Comments> {
                 children: [
                   CircleAvatar(
                     radius: 20.0,
-                    backgroundImage: CachedNetworkImageProvider(comments.userDp!),
+                    backgroundImage:
+                        CachedNetworkImageProvider(comments.userDp!),
                   ),
                   SizedBox(width: 10.0),
                   Column(
@@ -302,7 +305,7 @@ class _CommentsState extends State<Comments> {
               ),
               Padding(
                 padding: const EdgeInsets.only(left: 50.0),
-                child: Text( comments.comment!.trim()),
+                child: Text(comments.comment!.trim()),
               ),
               SizedBox(height: 10.0),
             ],

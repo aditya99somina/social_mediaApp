@@ -87,39 +87,49 @@ class EditProfileViewModel extends ChangeNotifier {
     loading = true;
     notifyListeners();
     try {
-      PickedFile? pickedFile = await picker.getImage(
+      final pickedFile = await picker.pickImage(
         source: camera ? ImageSource.camera : ImageSource.gallery,
       );
-      CroppedFile? croppedFile = await ImageCropper().cropImage(
-        sourcePath: pickedFile!.path,
-        aspectRatioPresets: [
-          CropAspectRatioPreset.square,
-          CropAspectRatioPreset.ratio3x2,
-          CropAspectRatioPreset.original,
-          CropAspectRatioPreset.ratio4x3,
-          CropAspectRatioPreset.ratio16x9
-        ],
-        uiSettings: [
-          AndroidUiSettings(
-            toolbarTitle: 'Crop Image',
-            toolbarColor: Constants.lightAccent,
-            toolbarWidgetColor: Colors.white,
-            initAspectRatio: CropAspectRatioPreset.original,
-            lockAspectRatio: false,
-          ),
-          IOSUiSettings(
-            minimumAspectRatio: 1.0,
-          ),
-        ],
-      );
-      image = File(croppedFile!.path);
+      if (pickedFile != null) {
+        final croppedFile = await ImageCropper().cropImage(
+          sourcePath: pickedFile.path,
+          uiSettings: [
+            AndroidUiSettings(
+              toolbarTitle: 'Crop Image',
+              toolbarColor: Constants.lightAccent,
+              toolbarWidgetColor: Colors.white,
+              initAspectRatio: CropAspectRatioPreset.original,
+              lockAspectRatio: false,
+              aspectRatioPresets: [
+                CropAspectRatioPreset.square,
+                CropAspectRatioPreset.ratio3x2,
+                CropAspectRatioPreset.original,
+                CropAspectRatioPreset.ratio4x3,
+                CropAspectRatioPreset.ratio16x9,
+              ],
+            ),
+            IOSUiSettings(
+              minimumAspectRatio: 1.0,
+              aspectRatioPresets: [
+                CropAspectRatioPreset.square,
+                CropAspectRatioPreset.ratio3x2,
+                CropAspectRatioPreset.original,
+                CropAspectRatioPreset.ratio4x3,
+                CropAspectRatioPreset.ratio16x9,
+              ],
+            ),
+          ],
+        );
+        if (croppedFile != null) {
+          image = File(croppedFile.path);
+        }
+      }
       loading = false;
-      notifyListeners();
     } catch (e) {
       loading = false;
-      notifyListeners();
-      showInSnackBar('Cancelled', context);
+      showInSnackBar('Cancelled', context!);
     }
+    notifyListeners();
   }
 
   clear() {

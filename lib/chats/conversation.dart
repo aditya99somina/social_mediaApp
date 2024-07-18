@@ -140,8 +140,10 @@ class _ConversationState extends State<Conversation> {
                             focusNode: focusNode,
                             style: TextStyle(
                               fontSize: 15.0,
-                              color:
-                                  Theme.of(context).textTheme.headline6!.color,
+                              color: Theme.of(context)
+                                  .textTheme
+                                  .headlineSmall!
+                                  .color,
                             ),
                             decoration: InputDecoration(
                               contentPadding: EdgeInsets.all(10.0),
@@ -151,7 +153,7 @@ class _ConversationState extends State<Conversation> {
                               hintStyle: TextStyle(
                                 color: Theme.of(context)
                                     .textTheme
-                                    .headline6!
+                                    .headlineSmall!
                                     .color,
                               ),
                             ),

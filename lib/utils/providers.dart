@@ -8,6 +8,7 @@ import 'package:social_media_app/view_models/profile/edit_profile_view_model.dar
 import 'package:social_media_app/view_models/status/status_view_model.dart';
 import 'package:social_media_app/view_models/theme/theme_view_model.dart';
 import 'package:social_media_app/view_models/user/user_view_model.dart';
+// ignore: unused_import
 import 'package:social_media_app/utils/constants.dart';
 
 List<SingleChildWidget> providers = [

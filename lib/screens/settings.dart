@@ -19,14 +19,14 @@ class _SettingState extends State<Setting> {
           },
           child: Icon(Icons.keyboard_backspace),
         ),
-        backgroundColor: Theme.of(context).backgroundColor,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 0.0,
         title: Text(
           "Settings",
           style: TextStyle(),
         ),
       ),
-      backgroundColor: Theme.of(context).backgroundColor,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Padding(
         padding: EdgeInsets.all(10.0),
         child: ListView(

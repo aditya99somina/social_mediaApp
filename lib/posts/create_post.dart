@@ -18,15 +18,19 @@ class CreatePost extends StatefulWidget {
 class _CreatePostState extends State<CreatePost> {
   @override
   Widget build(BuildContext context) {
-    currentUserId() {
+    // Function to get current user ID
+    String currentUserId() {
       return firebaseAuth.currentUser!.uid;
     }
 
+    // Accessing PostsViewModel using Provider
     PostsViewModel viewModel = Provider.of<PostsViewModel>(context);
+
     return WillPopScope(
       onWillPop: () async {
-        await viewModel.resetPost();
-        return true;
+        // Reset post when leaving the page
+        viewModel.resetPost();
+        return true; // Allow pop
       },
       child: LoadingOverlay(
         progressIndicator: circularProgress(context),
@@ -37,6 +41,7 @@ class _CreatePostState extends State<CreatePost> {
             leading: IconButton(
               icon: Icon(Ionicons.close_outline),
               onPressed: () {
+                // Reset post and pop when close button is pressed
                 viewModel.resetPost();
                 Navigator.pop(context);
               },
@@ -46,9 +51,10 @@ class _CreatePostState extends State<CreatePost> {
             actions: [
               GestureDetector(
                 onTap: () async {
+                  // Upload post and reset when "Post" is tapped
                   await viewModel.uploadPosts(context);
-                  Navigator.pop(context);
                   viewModel.resetPost();
+                  Navigator.pop(context);
                 },
                 child: Padding(
                   padding: const EdgeInsets.all(20.0),
@@ -68,6 +74,7 @@ class _CreatePostState extends State<CreatePost> {
             padding: EdgeInsets.symmetric(horizontal: 15.0),
             children: [
               SizedBox(height: 15.0),
+              // Display current user information
               StreamBuilder(
                 stream: usersRef.doc(currentUserId()).snapshots(),
                 builder: (context, AsyncSnapshot<DocumentSnapshot> snapshot) {
@@ -142,7 +149,7 @@ class _CreatePostState extends State<CreatePost> {
               TextFormField(
                 initialValue: viewModel.description,
                 decoration: InputDecoration(
-                  hintText: 'Eg. This is very beautiful place!',
+                  hintText: 'Eg. This is a very beautiful place!',
                   focusedBorder: UnderlineInputBorder(),
                 ),
                 maxLines: null,
@@ -164,7 +171,7 @@ class _CreatePostState extends State<CreatePost> {
                     controller: viewModel.locationTEC,
                     decoration: InputDecoration(
                       contentPadding: EdgeInsets.all(0.0),
-                      hintText: 'United States,Los Angeles!',
+                      hintText: 'United States, Los Angeles!',
                       focusedBorder: UnderlineInputBorder(),
                     ),
                     maxLines: null,
@@ -189,7 +196,8 @@ class _CreatePostState extends State<CreatePost> {
     );
   }
 
-  showImageChoices(BuildContext context, PostsViewModel viewModel) {
+  // Function to show image selection options
+  void showImageChoices(BuildContext context, PostsViewModel viewModel) {
     showModalBottomSheet(
       context: context,
       shape: RoundedRectangleBorder(

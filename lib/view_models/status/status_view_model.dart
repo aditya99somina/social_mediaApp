@@ -18,16 +18,16 @@ import 'package:social_media_app/utils/constants.dart';
 import 'package:social_media_app/utils/firebase.dart';
 
 class StatusViewModel extends ChangeNotifier {
-  //Services
+  // Services
   UserService userService = UserService();
   PostService postService = PostService();
   StatusService statusService = StatusService();
 
-  //Keys
+  // Keys
   GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
   GlobalKey<FormState> formKey = GlobalKey<FormState>();
 
-  //Variables
+  // Variables
   bool loading = false;
   String? username;
   File? mediaUrl;
@@ -40,7 +40,7 @@ class StatusViewModel extends ChangeNotifier {
   bool edit = false;
   String? id;
 
-  //integers
+  // Integers
   int pageIndex = 0;
 
   setDescription(String val) {
@@ -49,53 +49,62 @@ class StatusViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  //Functions
-  //Functions
+  // Functions
   pickImage({bool camera = false, BuildContext? context}) async {
     loading = true;
     notifyListeners();
     try {
-      PickedFile? pickedFile = await picker.getImage(
+      final pickedFile = await picker.pickImage(
         source: camera ? ImageSource.camera : ImageSource.gallery,
       );
-      CroppedFile? croppedFile = await ImageCropper().cropImage(
-        sourcePath: pickedFile!.path,
-        aspectRatioPresets: [
-          CropAspectRatioPreset.square,
-          CropAspectRatioPreset.ratio3x2,
-          CropAspectRatioPreset.original,
-          CropAspectRatioPreset.ratio4x3,
-          CropAspectRatioPreset.ratio16x9
-        ],
-        uiSettings: [
-          AndroidUiSettings(
-            toolbarTitle: 'Crop Image',
-            toolbarColor: Constants.lightAccent,
-            toolbarWidgetColor: Colors.white,
-            initAspectRatio: CropAspectRatioPreset.original,
-            lockAspectRatio: false,
-          ),
-          IOSUiSettings(
-            minimumAspectRatio: 1.0,
-          ),
-        ],
-      );
-      mediaUrl = File(croppedFile!.path);
+      if (pickedFile != null) {
+        final croppedFile = await ImageCropper().cropImage(
+          sourcePath: pickedFile.path,
+          uiSettings: [
+            AndroidUiSettings(
+              toolbarTitle: 'Crop Image',
+              toolbarColor: Constants.lightAccent,
+              toolbarWidgetColor: Colors.white,
+              initAspectRatio: CropAspectRatioPreset.original,
+              lockAspectRatio: false,
+              aspectRatioPresets: [
+                CropAspectRatioPreset.square,
+                CropAspectRatioPreset.ratio3x2,
+                CropAspectRatioPreset.original,
+                CropAspectRatioPreset.ratio4x3,
+                CropAspectRatioPreset.ratio16x9,
+              ],
+            ),
+            IOSUiSettings(
+              minimumAspectRatio: 1.0,
+              aspectRatioPresets: [
+                CropAspectRatioPreset.square,
+                CropAspectRatioPreset.ratio3x2,
+                CropAspectRatioPreset.original,
+                CropAspectRatioPreset.ratio4x3,
+                CropAspectRatioPreset.ratio16x9,
+              ],
+            ),
+          ],
+        );
+        if (croppedFile != null) {
+          mediaUrl = File(croppedFile.path);
+          Navigator.of(context!).push(
+            CupertinoPageRoute(
+              builder: (_) => ConfirmStatus(),
+            ),
+          );
+        }
+      }
       loading = false;
-      Navigator.of(context!).push(
-        CupertinoPageRoute(
-          builder: (_) => ConfirmStatus(),
-        ),
-      );
-      notifyListeners();
     } catch (e) {
       loading = false;
-      notifyListeners();
-      showInSnackBar('Cancelled', context);
+      showInSnackBar('Cancelled', context!);
     }
+    notifyListeners();
   }
 
-  //send message
+  // Send message
   sendStatus(String chatId, StatusModel message) {
     statusService.sendStatus(
       message,
@@ -103,7 +112,7 @@ class StatusViewModel extends ChangeNotifier {
     );
   }
 
-  //send the first message
+  // Send the first message
   Future<String> sendFirstStatus(StatusModel message) async {
     String newChatId = await statusService.sendFirstStatus(
       message,

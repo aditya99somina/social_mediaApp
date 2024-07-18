@@ -12,17 +12,18 @@ import 'package:social_media_app/services/post_service.dart';
 import 'package:social_media_app/services/user_service.dart';
 import 'package:social_media_app/utils/constants.dart';
 import 'package:social_media_app/utils/firebase.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class PostsViewModel extends ChangeNotifier {
-  //Services
+  // Services
   UserService userService = UserService();
   PostService postService = PostService();
 
-  //Keys
+  // Keys
   GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
   GlobalKey<FormState> formKey = GlobalKey<FormState>();
 
-  //Variables
+  // Variables
   bool loading = false;
   String? username;
   File? mediaUrl;
@@ -42,98 +43,107 @@ class PostsViewModel extends ChangeNotifier {
   bool edit = false;
   String? id;
 
-  //controllers
+  // Controllers
   TextEditingController locationTEC = TextEditingController();
 
-  //Setters
-  setEdit(bool val) {
+  // Setters
+  void setEdit(bool val) {
     edit = val;
     notifyListeners();
   }
 
-  setPost(PostModel post) {
+  void setPost(PostModel? post) {
     if (post != null) {
       description = post.description;
       imgLink = post.mediaUrl;
       location = post.location;
       edit = true;
-      edit = false;
-      notifyListeners();
     } else {
       edit = false;
-      notifyListeners();
     }
+    notifyListeners();
   }
 
-  setUsername(String val) {
+  void setUsername(String val) {
     print('SetName $val');
     username = val;
     notifyListeners();
   }
 
-  setDescription(String val) {
+  void setDescription(String val) {
     print('SetDescription $val');
     description = val;
     notifyListeners();
   }
 
-  setLocation(String val) {
+  void setLocation(String val) {
     print('SetCountry $val');
     location = val;
     notifyListeners();
   }
 
-  setBio(String val) {
+  void setBio(String val) {
     print('SetBio $val');
     bio = val;
     notifyListeners();
   }
 
-  //Functions
-  pickImage({bool camera = false, BuildContext? context}) async {
+  // Functions
+
+  Future<void> pickImage({bool camera = false, BuildContext? context}) async {
     loading = true;
     notifyListeners();
     try {
-      PickedFile? pickedFile = await picker.getImage(
+      final pickedFile = await picker.pickImage(
         source: camera ? ImageSource.camera : ImageSource.gallery,
       );
-      CroppedFile? croppedFile = await ImageCropper().cropImage(
-        sourcePath: pickedFile!.path,
-        aspectRatioPresets: [
-          CropAspectRatioPreset.square,
-          CropAspectRatioPreset.ratio3x2,
-          CropAspectRatioPreset.original,
-          CropAspectRatioPreset.ratio4x3,
-          CropAspectRatioPreset.ratio16x9
-        ],
-        uiSettings: [
-          AndroidUiSettings(
-            toolbarTitle: 'Crop Image',
-            toolbarColor: Constants.lightAccent,
-            toolbarWidgetColor: Colors.white,
-            initAspectRatio: CropAspectRatioPreset.original,
-            lockAspectRatio: false,
-          ),
-          IOSUiSettings(
-            minimumAspectRatio: 1.0,
-          ),
-        ],
-      );
-      mediaUrl = File(croppedFile!.path);
+      if (pickedFile != null) {
+        final croppedFile = await ImageCropper().cropImage(
+          sourcePath: pickedFile.path,
+          uiSettings: [
+            AndroidUiSettings(
+              toolbarTitle: 'Crop Image',
+              toolbarColor: Constants.lightAccent,
+              toolbarWidgetColor: Colors.white,
+              initAspectRatio: CropAspectRatioPreset.original,
+              lockAspectRatio: false,
+              aspectRatioPresets: [
+                CropAspectRatioPreset.square,
+                CropAspectRatioPreset.ratio3x2,
+                CropAspectRatioPreset.original,
+                CropAspectRatioPreset.ratio4x3,
+                CropAspectRatioPreset.ratio16x9,
+              ],
+            ),
+            IOSUiSettings(
+              minimumAspectRatio: 1.0,
+              aspectRatioPresets: [
+                CropAspectRatioPreset.square,
+                CropAspectRatioPreset.ratio3x2,
+                CropAspectRatioPreset.original,
+                CropAspectRatioPreset.ratio4x3,
+                CropAspectRatioPreset.ratio16x9,
+              ],
+            ),
+          ],
+        );
+        if (croppedFile != null) {
+          mediaUrl = File(croppedFile.path);
+        }
+      }
       loading = false;
-      notifyListeners();
     } catch (e) {
       loading = false;
-      notifyListeners();
       showInSnackBar('Cancelled', context);
     }
+    notifyListeners();
   }
 
-  getLocation() async {
+  Future<void> getLocation() async {
     loading = true;
     notifyListeners();
     LocationPermission permission = await Geolocator.checkPermission();
-    print(permission);
+    print(permission.toString());
     if (permission == LocationPermission.denied ||
         permission == LocationPermission.deniedForever) {
       LocationPermission rPermission = await Geolocator.requestPermission();
@@ -141,58 +151,60 @@ class PostsViewModel extends ChangeNotifier {
       await getLocation();
     } else {
       position = await Geolocator.getCurrentPosition(
-          desiredAccuracy: LocationAccuracy.high);
+        desiredAccuracy: LocationAccuracy.high,
+      );
       List<Placemark> placemarks = await placemarkFromCoordinates(
-          position!.latitude, position!.longitude);
-      placemark = placemarks[0];
-      location = " ${placemarks[0].locality}, ${placemarks[0].country}";
-      locationTEC.text = location!;
+        position!.latitude,
+        position!.longitude,
+      );
+      placemark = placemarks.isNotEmpty ? placemarks[0] : null;
+      location = "${placemark?.locality ?? ''}, ${placemark?.country ?? ''}";
+      locationTEC.text = location ?? '';
       print(location);
     }
     loading = false;
     notifyListeners();
   }
 
-  uploadPosts(BuildContext context) async {
+  Future<void> uploadPosts(BuildContext context) async {
     try {
       loading = true;
       notifyListeners();
       await postService.uploadPost(mediaUrl!, location!, description!);
-      loading = false;
       resetPost();
-      notifyListeners();
+      showInSnackBar('Uploaded successfully', context);
     } catch (e) {
       print(e);
+      showInSnackBar('Failed to upload', context);
+    } finally {
       loading = false;
-      resetPost();
-      showInSnackBar('Uploaded successfully!', context);
       notifyListeners();
     }
   }
 
-  uploadProfilePicture(BuildContext context) async {
+  Future<void> uploadProfilePicture(BuildContext context) async {
     if (mediaUrl == null) {
       showInSnackBar('Please select an image', context);
-    } else {
-      try {
-        loading = true;
-        notifyListeners();
-        await postService.uploadProfilePicture(
-            mediaUrl!, firebaseAuth.currentUser!);
-        loading = false;
-        Navigator.of(context)
-            .pushReplacement(CupertinoPageRoute(builder: (_) => TabScreen()));
-        notifyListeners();
-      } catch (e) {
-        print(e);
-        loading = false;
-        showInSnackBar('Uploaded successfully!', context);
-        notifyListeners();
-      }
+      return;
+    }
+
+    try {
+      loading = true;
+      notifyListeners();
+      await postService.uploadProfilePicture(
+          mediaUrl!, FirebaseAuth.instance.currentUser!);
+      Navigator.of(context)
+          .pushReplacement(CupertinoPageRoute(builder: (_) => TabScreen()));
+    } catch (e) {
+      print(e);
+      showInSnackBar('Failed to upload', context);
+    } finally {
+      loading = false;
+      notifyListeners();
     }
   }
 
-  resetPost() {
+  void resetPost() {
     mediaUrl = null;
     description = null;
     location = null;
@@ -200,8 +212,11 @@ class PostsViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void showInSnackBar(String value, context) {
-    ScaffoldMessenger.of(context).removeCurrentSnackBar();
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(value)));
+  void showInSnackBar(String value, BuildContext? context) {
+    if (context != null) {
+      ScaffoldMessenger.of(context).removeCurrentSnackBar();
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(value)));
+    }
   }
 }
